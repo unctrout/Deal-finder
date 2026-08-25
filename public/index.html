@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Deal Hunter</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3f6fa;
+  color: #18202a;
+}
+
+header {
+  background: linear-gradient(135deg, #12233f, #1d4f91);
+  color: white;
+  padding: 34px 20px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 42px;
+}
+
+header p {
+  margin: 8px 0 0;
+  font-size: 18px;
+  opacity: .9;
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 25px;
+}
+
+.search-panel {
+  background: white;
+  padding: 22px;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(0,0,0,.10);
+  margin-top: -18px;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: 2fr 1.3fr auto;
+  gap: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 16px;
+  font-size: 17px;
+  border: 1px solid #ccd4df;
+  border-radius: 10px;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 0 28px;
+  font-size: 17px;
+  font-weight: bold;
+  background: #1473e6;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0d5fc2;
+}
+
+.status {
+  text-align: center;
+  margin: 25px 0;
+  font-size: 17px;
+  color: #5b6573;
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.card {
+  background: white;
+  border-radius: 15px;
+  padding: 18px;
+  box-shadow: 0 3px 13px rgba(0,0,0,.09);
+  display: flex;
+  gap: 18px;
+  position: relative;
+}
+
+.rank {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #12233f;
+  color: white;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.product-image {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.info {
+  flex: 1;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.store {
+  color: #52606f;
+  margin-bottom: 8px;
+}
+
+.price {
+  font-size: 28px;
+  font-weight: bold;
+  color: #087f23;
+}
+
+.old-price {
+  margin-left: 8px;
+  text-decoration: line-through;
+  color: #8a8a8a;
+}
+
+.savings {
+  display: inline-block;
+  margin-top: 7px;
+  background: #e8f7ec;
+  color: #087f23;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.rating {
+  margin-top: 9px;
+  color: #555;
+}
+
+.delivery {
+  margin-top: 7px;
+  color: #555;
+}
+
+.deal-button {
+  display: inline-block;
+  margin-top: 12px;
+  background: #1473e6;
+  color: white;
+  padding: 10px 15px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.best {
+  border: 2px solid #19a44b;
+}
+
+.best-label {
+  display: inline-block;
+  background: #19a44b;
+  color: white;
+  padding: 5px 9px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+@media(max-width: 800px) {
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+
+  button {
+    padding: 15px;
+  }
+
+  .results {
+    grid-template-columns: 1fr;
+  }
+
+  .product-image {
+    width: 110px;
+    height: 110px;
+  }
+
+  header h1 {
+    font-size: 34px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🔎 Deal Hunter</h1>
+  <p>Search the web and find the best deals.</p>
+</header>
+
+<div class="container">
+
+  <div class="search-panel">
+
+    <div class="search-row">
+
+      <input
+        id="query"
+        placeholder="What are you looking for? Example: 65 inch Samsung TV"
+      >
+
+      <input
+        id="location"
+        value="Asheville, North Carolina, United States"
+        placeholder="City or ZIP code"
+      >
+
+      <button onclick="searchDeals()">SEARCH</button>
+
+    </div>
+
+  </div>
+
+  <div id="status" class="status">
+    Enter an item above to find today's best deals.
+  </div>
+
+  <div id="results" class="results"></div>
+
+</div>
+
+<script>
+
+async function searchDeals() {
+
+  const query = document.getElementById("query").value.trim();
+  const location = document.getElementById("location").value.trim();
+
+  const status = document.getElementById("status");
+  const results = document.getElementById("results");
+
+  if (!query) {
+    status.textContent = "Please enter something to search for.";
+    return;
+  }
+
+  status.textContent = "🔎 Searching live prices and deals...";
+  results.innerHTML = "";
+
+  try {
+
+    const response = await fetch(
+      `/api/search?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Search failed.");
+    }
+
+    if (!data.results || data.results.length === 0) {
+      status.textContent = "No deals were found. Try another search.";
+      return;
+    }
+
+    const items = [...data.results];
+
+    items.sort((a,b) => {
+      if (a.price == null) return 1;
+      if (b.price == null) return -1;
+      return a.price - b.price;
+    });
+
+    status.textContent =
+      `Top ${items.length} deals found for "${query}"`;
+
+    items.forEach((item,index) => {
+
+      let savings = "";
+
+      if (item.oldPrice && item.price && item.oldPrice > item.price) {
+
+        const dollars = item.oldPrice - item.price;
+
+        const percent =
+          Math.round((dollars / item.oldPrice) * 100);
+
+        savings =
+          `<div class="savings">
+          Save $${dollars.toFixed(2)} (${percent}%)
+          </div>`;
+      }
+
+      const card = document.createElement("div");
+
+      card.className =
+        "card" + (index === 0 ? " best" : "");
+
+      card.innerHTML = `
+
+        <div class="rank">${index + 1}</div>
+
+        ${item.image
+          ? `<img class="product-image"
+             src="${item.image}"
+             alt="Product">`
+          : ""
+        }
+
+        <div class="info">
+
+          ${index === 0
+            ? `<div class="best-label">🏆 LOWEST PRICE</div>`
+            : ""
+          }
+
+          <div class="title">
+            ${item.title}
+          </div>
+
+          <div class="store">
+            🏪 ${item.store}
+          </div>
+
+          <div>
+
+            <span class="price">
+              ${item.priceText ||
+                (item.price
+                  ? "$" + item.price.toFixed(2)
+                  : "See price")}
+            </span>
+
+            ${item.oldPriceText
+              ? `<span class="old-price">
+                 ${item.oldPriceText}
+                 </span>`
+              : ""
+            }
+
+          </div>
+
+          ${savings}
+
+          ${item.rating
+            ? `<div class="rating">
+               ⭐ ${item.rating}
+               ${item.reviews
+                 ? `(${item.reviews} reviews)`
+                 : ""}
+               </div>`
+            : ""
+          }
+
+          ${item.delivery
+            ? `<div class="delivery">
+               🚚 ${item.delivery}
+               </div>`
+            : ""
+          }
+
+          ${item.link
+            ? `<a class="deal-button"
+                 href="${item.link}"
+                 target="_blank">
+                 VIEW DEAL
+               </a>`
+            : ""
+          }
+
+        </div>
+      `;
+
+      results.appendChild(card);
+
+    });
+
+  } catch(error) {
+
+    status.textContent =
+      "⚠️ " + error.message;
+
+  }
+}
+
+document
+  .getElementById("query")
+  .addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+      searchDeals();
+    }
+
+  });
+
+</script>
+
+</body>
+</html>
